@@ -29,7 +29,7 @@ jobs:
       - name: 安装 FFmpeg
         shell: pwsh
         run: |
-          choco install ffmpeg --yes --no-progress
+          choco install ffmpeg --version=7.1.1 --yes --no-progress
           $ffmpeg = (Get-Command ffmpeg -ErrorAction SilentlyContinue)
           if (-not $ffmpeg) { throw '未找到 FFmpeg，可在 Windows 本地改用 winget 安装' }
           ffmpeg -version
