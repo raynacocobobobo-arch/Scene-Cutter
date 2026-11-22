@@ -1,0 +1,44 @@
+name: 构建 Mac 应用
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    steps:
+      - name: 获取源码
+        uses: actions/checkout@v4
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 安装 FFmpeg
+        run: brew install ffmpeg
+      - name: 安装 Python 依赖
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: 运行核心测试
+        run: python -m unittest discover -s tests -v
+      - name: 打包 Mac 应用
+        run: |
+          python -m pip install 'pyinstaller>=6,<7'
+          python -m PyInstaller --noconfirm --clean --windowed --name '镜头切片' \
+            --collect-submodules PySide6.QtMultimedia \
+            --collect-submodules PySide6.QtMultimediaWidgets \
+            --icon 'assets/app_icon.icns' \
+            --add-data 'assets:assets' app.py
+          ditto -c -k --sequesterRsrc --keepParent 'dist/镜头切片.app' 'dist/镜头切片_Mac.zip'
+      - name: 上传 Mac 构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: scene-cutter-mac
+          path: dist/镜头切片_Mac.zip
+          if-no-files-found: error
