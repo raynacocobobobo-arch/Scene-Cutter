@@ -1,74 +1,41 @@
-# 镜头切片 · 第3.4.1版（Mac 定版维护）
+# 镜头切片 · Scene Cutter 3.4.1
 
-**3.4.1 正式图标：** 已更换为用户提供的黑白手绘场记板图标。图标文件位于 `assets/app_icon.png`（程序窗口）及 `assets/app_icon.icns`（Mac 应用包），无需单独安装图标或 AI 模型。
+**同一版本的 macOS 与 Windows 双平台源码仓库。** 主程序使用 Python + PySide6 + FFmpeg，镜头识别及原分辨率 JPG 抽帧功能保持一致，无须 AI 模型。
 
-本程序为本地视频镜头检测工具，使用 FFmpeg 分析视频，使用 PySide6 显示界面；自动导出**原分辨率高质量 JPG**。保留 3.2 的检测算法、手动补帧、去重、总览图导出、历史记录和退出清理方式。
+| 平台 | 版本定位 | 源码与安装说明 | 构建产物 |
+|---|---|---|---|
+| macOS | **3.4.1 正式定版**（已经 Mac 实机验证） | [mac/](mac/) · [Mac 使用说明](mac/README.md) | `镜头切片.app` |
+| Windows 10/11 x64 | **3.4.1 移植版，待本地 Agent 实机验收** | [windows/](windows/) · [Windows 使用说明](windows/README.md) | `镜头切片.exe`（目录版） |
 
-## 3.4 界面微调（在 3.3 基础上）
-
-1. **人物线稿固定显示**：左下角的高清人物只作为静态装饰，取消点击放大、鼠标手形光标和提示；保留高分辨率 PNG，并仍以小尺寸显示。
-2. **截图灵敏度移到播放器正上方**：使用居中的大号“截图灵敏度”标题，下面居中显示调节滑块和百分数；取消播放器下方原有的“镜头检测”标题及重复的灵敏度控件。设置值、0–100% 范围和检测算法保持不变。
-3. **手动截图操作更清楚**：播放器播放按钮和进度条正下方，显示时间输入框和“截取当前画面”按钮；拖动进度条定位后点击即可保存一张高清 JPG。原先的“在当前时间补一张截图”措辞不再使用。
-
-**其余能力原样保留**：绿色“开始解析”批量按钮、统一自定义输出位置和首次选择引导、重新导入同一视频、自动清理已完成队列、历史预览、镜头墙、去重、导出总览图以及 JPG 保护机制。
-
-## Mac 打包崩溃修复（3.4.1）
-
-在 macOS 实机中，曾遇到源码运行正常、打包后闪退的情况。根据当时实机诊断，中文应用名称被用于 Bundle Identifier 存在兼容性风险。现在应用显示名称仍为 `镜头切片.app`，但 `CFBundleIdentifier` 显式固定为 `com.scenecutter.app`。
-
-本机脚本和 GitHub Actions 均加入 `--osx-bundle-identifier com.scenecutter.app`，打包后检查 `Info.plist` 并执行 ad-hoc 签名验证。此处是打包兼容性修复，不修改镜头检测代码。ad-hoc 签名不等于 Apple Developer 签名或公证。
-
-图标来源于用户提供的黑白场记板原图，已制成高对比度应用图标。构建前执行 `generate_macos_icon.command`，使用 Mac 系统自带的 `sips` 和 `iconutil` 从 `assets/app_icon.png` 生成 Finder、Dock 使用的 `.icns`，从而不会使用旧版图标。
-
-## 如何安装和启动
-
-在 Mac 上解压完整 ZIP，进入 `SceneCutter` 文件夹，打开终端执行：
+## macOS
 
 ```bash
+cd mac
 bash install_macos.command
 bash launch_macos.command
-```
-
-环境要求：macOS、Python 3.10 以上、FFmpeg。安装脚本会处理 Python 依赖（固定 PySide6 6.11.3，避开此前报告过的退出阶段问题）。首次运行先根据弹窗指定统一 JPG 输出目录，然后拖入视频，点击**绿色“开始解析”**。
-
-打包为双击启动的 Mac 应用：
-
-```bash
 bash build_macos.command
 ```
 
-产物是 `dist/镜头切片.app`，Finder 和程序坞图标由 `assets/app_icon.icns` 设置；打开程序时的图标由 `assets/app_icon.png` 设置。旧版 `.app` 不会自动变更图标，必须使用新版源码重新打包并替换原应用。重新打包后需要打开新版应用；若还双击原来的旧版 `.app`，改动不会生效。
+macOS 显示名为「镜头切片」，**Bundle ID 固定为 `com.scenecutter.app`**，不可用中文名称代替，否则可能引发打包后的 macOS 图形渲染异常。
 
-## 文件安全与重新处理
+## Windows
 
-- 导入新视频时，已完成的旧任务**仅从队列中移除**，历史结果、截图预览和已保存 JPG 均保留。
-- 重新拖入一个已经处理过的视频会进入待办，**不会直接跳过**；处理后另建结果子文件夹，旧 JPG 不覆盖。
-- 程序不会自动永久删除已生成的 JPG。只有用户明确执行“移除选中”或“去重复”，对应图片才会被移动到当前结果目录下的 `.excluded` 文件夹，可恢复。手动清空队列不会影响任何图片。
-- 统一输出路径、灵敏度、自动清理队列开关和历史结果保存在本机设置中。旧版 3.2 设置兼容，不需要迁移图片。
-- 本地设置：`~/Library/Application Support/SceneCutter/state.json`，运行日志：`~/Library/Logs/SceneCutter/`。
-
-## 操作建议
-
-1. 打开软件，首次出现提示时选择统一保存目录。
-2. 导入一个或多个视频，点击绿色解析按钮。
-3. 处理完成后点击右侧**查看全部大图**，滚动浏览，不必逐张双击文件；如需放大选中截图，可直接在镜头墙右侧查看。
-4. 若发现漏镜头，回到播放器拖动时间轴或输入秒数，点击播放器下方的“截取当前画面”。
-5. 需要重新处理时，直接再次拖入同一视频，然后点击开始。新结果是独立输出目录。
-
-## 验证
-
-在源码目录运行：
-
-```bash
-bash run_tests.command
+```powershell
+cd windows
+winget install -e --id Gyan.FFmpeg
+.\install_windows.cmd
+.\run_tests_windows.cmd
+.\launch_windows.cmd
+.\build_windows.cmd
 ```
 
-包含视频检测和导出回归测试、历史结果与队列保持、重复导入、原 JPG 保留、界面组件契约检查。本环境已运行 Python 单元测试和 FFmpeg 实测；由于当前测试容器未安装 PySide6，也不运行 macOS，**Qt 窗口显示、镜头墙交互以及 Mac `.app` 的实际启动仍需在你的 Mac 上验证**。不声明已完全消除所有 PySide6 的退出崩溃。
+Windows 为 PyInstaller 目录版，发布时需复制整个 `dist\镜头切片` 目录。Windows 的 `Windows Agent` 需按照 [验收交接说明](windows/WINDOWS_AGENT_HANDOFF.md) 逐项验证 exe 后再视为正式发行。
 
+## CI / 平台隔离
 
-## GitHub 源码仓库补充说明
+- [Mac 自动测试与打包](.github/workflows/build-macos.yml)：`macos-latest`，仅在 Mac 源码变更时触发。
+- [Windows 自动测试与打包](.github/workflows/build-windows.yml)：`windows-latest`，仅在 Windows 源码变更时触发。
+- 两个平台的配置、打包脚本、图标、日志目录分别管理；不要以 Windows 变更覆盖 Mac 已定版的业务逻辑。
+- 所有截图、源视频、缓存、虚拟环境和本机日志均不得提交仓库。
 
-- [技术架构与处理流程](docs/技术架构与处理流程.md)：依赖、是否需要模型、各文件职责与镜头截图流程。
-- [发布与安装](docs/发布与安装.md)：Mac 运行、本机 `.app` 打包、GitHub 自动构建、独立仓库发布。
-- `publish_github.command`：只针对已确认的 `raynacocobobobo-arch/Scene-Cutter` 空仓库执行首次推送，不创建新仓库。
-- `.github/workflows/build-macos.yml`：GitHub 上自动测试并打包 Mac 应用。
+> GitHub CI 仅证明自动构建与测试状态，不能代替 Windows 实机的播放、GPU 解码、中文路径、拖拽、4K 抽帧与关闭窗口验证。

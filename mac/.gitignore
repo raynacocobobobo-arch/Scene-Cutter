@@ -1,0 +1,35 @@
+# 本地虚拟环境和 Python 缓存
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+
+# Mac 构建产物（通过 GitHub Actions 生成，不放进源码）
+build/
+dist/
+*.spec
+
+# 不上传用户视频、截图、任务历史、运行日志
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+*.m4v
+*.flv
+*.wmv
+*_shots*/
+.excluded/
+launcher.log
+crash.log
+state.json
+*.ips
+
+# 本地系统文件
+.AppleDouble/
+.Trashes/
+
+# Mac 图标构建生成文件（来源：assets/app_icon.png）
+assets/app_icon.icns

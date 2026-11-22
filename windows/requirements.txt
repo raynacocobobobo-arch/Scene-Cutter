@@ -1,0 +1,3 @@
+PySide6==6.11.3  # Pin Qt/PySide below the reported 6.12.0 shutdown crash
+numpy>=1.24,<3
+Pillow>=10,<13

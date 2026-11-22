@@ -4,8 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths: ['mac/**', '.github/workflows/build-macos.yml']
   pull_request:
     branches: [main]
+    paths: ['mac/**', '.github/workflows/build-macos.yml']
 
 jobs:
   build:
@@ -24,10 +26,11 @@ jobs:
       - name: 安装 Python 依赖
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
+          python -m pip install -r mac/requirements.txt
       - name: 运行核心测试
-        run: python -m unittest discover -s tests -v
+        run: cd mac && python -m unittest discover -s tests -v
       - name: 打包 Mac 应用
+        working-directory: mac
         run: |
           bash generate_macos_icon.command
           python -m pip install 'pyinstaller>=6,<7'
@@ -47,5 +50,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: scene-cutter-mac
-          path: dist/镜头切片_Mac.zip
+          path: mac/dist/镜头切片_Mac.zip
           if-no-files-found: error

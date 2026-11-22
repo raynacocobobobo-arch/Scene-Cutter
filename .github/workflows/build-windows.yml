@@ -1,0 +1,62 @@
+name: 构建 Windows 应用
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'windows/**'
+      - '.github/workflows/build-windows.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'windows/**'
+      - '.github/workflows/build-windows.yml'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - name: 获取源码
+        uses: actions/checkout@v4
+      - name: 配置 Python 3.12 x64
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: 'x64'
+      - name: 安装 FFmpeg
+        shell: pwsh
+        run: |
+          choco install ffmpeg --yes --no-progress
+          $ffmpeg = (Get-Command ffmpeg -ErrorAction SilentlyContinue)
+          if (-not $ffmpeg) { throw '未找到 FFmpeg，可在 Windows 本地改用 winget 安装' }
+          ffmpeg -version
+          ffprobe -version
+      - name: 安装依赖与 PyInstaller
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r windows/requirements.txt
+          python -m pip install 'pyinstaller>=6,<7'
+      - name: 核心与 Windows 适配测试
+        shell: pwsh
+        env:
+          PYTHONPATH: ${{ github.workspace }}/windows
+        run: python -m unittest discover -s windows/tests -v
+      - name: 构建 Windows exe
+        shell: pwsh
+        run: |
+          python -m venv windows/.venv
+          & windows/.venv/Scripts/python.exe -m pip install -r windows/requirements.txt 'pyinstaller>=6,<7'
+          & windows/build_windows.ps1 -SkipInstall
+          $exe = 'windows/dist/镜头切片/镜头切片.exe'
+          if (-not (Test-Path $exe)) { throw "未找到 EXE: $exe" }
+          Compress-Archive -Path 'windows/dist/镜头切片/*' -DestinationPath 'windows/dist/镜头切片_Windows.zip' -Force
+      - name: 上传 Windows 构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: scene-cutter-windows-3.4.1
+          path: windows/dist/镜头切片_Windows.zip
+          if-no-files-found: error
