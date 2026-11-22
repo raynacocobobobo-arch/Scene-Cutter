@@ -1,6 +1,6 @@
-# 镜头切片 · 第3.4版（Mac）
+# 镜头切片 · 第3.4.1版（Mac 定版维护）
 
-**3.4 定版图标更新：** 已采用用户提供的场记板、视频画面和素材箱图标。图标文件位于 `assets/app_icon.png`（程序窗口）及 `assets/app_icon.icns`（Mac 应用包），无需单独安装图标或 AI 模型。
+**3.4.1 正式图标：** 已更换为用户提供的黑白手绘场记板图标。图标文件位于 `assets/app_icon.png`（程序窗口）及 `assets/app_icon.icns`（Mac 应用包），无需单独安装图标或 AI 模型。
 
 本程序为本地视频镜头检测工具，使用 FFmpeg 分析视频，使用 PySide6 显示界面；自动导出**原分辨率高质量 JPG**。保留 3.2 的检测算法、手动补帧、去重、总览图导出、历史记录和退出清理方式。
 
@@ -11,6 +11,14 @@
 3. **手动截图操作更清楚**：播放器播放按钮和进度条正下方，显示时间输入框和“截取当前画面”按钮；拖动进度条定位后点击即可保存一张高清 JPG。原先的“在当前时间补一张截图”措辞不再使用。
 
 **其余能力原样保留**：绿色“开始解析”批量按钮、统一自定义输出位置和首次选择引导、重新导入同一视频、自动清理已完成队列、历史预览、镜头墙、去重、导出总览图以及 JPG 保护机制。
+
+## Mac 打包崩溃修复（3.4.1）
+
+在 macOS 实机中，曾遇到源码运行正常、打包后闪退的情况。根据当时实机诊断，中文应用名称被用于 Bundle Identifier 存在兼容性风险。现在应用显示名称仍为 `镜头切片.app`，但 `CFBundleIdentifier` 显式固定为 `com.scenecutter.app`。
+
+本机脚本和 GitHub Actions 均加入 `--osx-bundle-identifier com.scenecutter.app`，打包后检查 `Info.plist` 并执行 ad-hoc 签名验证。此处是打包兼容性修复，不修改镜头检测代码。ad-hoc 签名不等于 Apple Developer 签名或公证。
+
+图标来源于用户提供的黑白场记板原图，已制成高对比度应用图标。构建前执行 `generate_macos_icon.command`，使用 Mac 系统自带的 `sips` 和 `iconutil` 从 `assets/app_icon.png` 生成 Finder、Dock 使用的 `.icns`，从而不会使用旧版图标。
 
 ## 如何安装和启动
 

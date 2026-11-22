@@ -30,3 +30,6 @@ state.json
 # 本地系统文件
 .AppleDouble/
 .Trashes/
+
+# Mac 图标构建生成文件（来源：assets/app_icon.png）
+assets/app_icon.icns
