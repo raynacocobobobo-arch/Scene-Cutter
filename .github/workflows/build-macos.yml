@@ -22,13 +22,19 @@ jobs:
         with:
           python-version: '3.12'
       - name: 安装 FFmpeg
-        run: brew install ffmpeg
+        run: |
+          brew install ffmpeg@7
+          echo "$(brew --prefix ffmpeg@7)/bin" >> "$GITHUB_PATH"
       - name: 安装 Python 依赖
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r mac/requirements.txt
       - name: 运行核心测试
-        run: cd mac && python -m unittest discover -s tests -v
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/.ci-tmp"
+          export TMPDIR="$GITHUB_WORKSPACE/.ci-tmp"
+          cd mac
+          python -m unittest discover -s tests -v
       - name: 打包 Mac 应用
         working-directory: mac
         run: |
